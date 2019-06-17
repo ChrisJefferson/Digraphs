@@ -7,7 +7,7 @@ set -o pipefail
 GAPROOT=$HOME/gap
 touch $GAPROOT/testlog.txt
 TESTLOG="$GAPROOT/testlog.txt"
-GAPSH="$GAPROOT/bin/gap.sh"
+GAPSH="$GAPROOT/bin/gap.sh -o 2g "
 DIG_DIR="$GAPROOT/pkg/digraphs"
 
 if [ "$SUITE" == "lint" ]; then
