@@ -51,6 +51,9 @@ gap> Print(DIGRAPHS_Dir());
 gap> Print(str);
 gap> StringFile(str);
 gap> StringFile("/home/travis/gap/pkg/digraphs/data/graph5.g6.gz");
+gap> DigraphFile(str);
+gap> IO_CompressedFile(str, "r");
+gap> IO_CompressedFile(str);
 gap> list := ReadDigraphs(str);;
 gap> Size(list);
 34
