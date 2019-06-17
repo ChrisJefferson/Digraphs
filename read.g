@@ -79,7 +79,7 @@ function(arg)
   Print("1:",splitname, ":", extension, "\n");
   # compressor format: ["executable", args for compression, args for uncompression]
   if extension = "gz" then
-      compressor := ["gzip",["-9q"],["-dq"]];
+      compressor := ["gzip",["-9"],["-d"]];
   elif extension = "bz2" then
       compressor := ["bzip2",["-9q"],["-dq"]];
   elif extension = "xz" then
@@ -91,6 +91,7 @@ function(arg)
   Print("2:",compressor, filename, mode, bufsize,"\n");
 
   if mode = "r" then
+        Print("2a:", compressor[1], ":", compressor[3],"\n");
       file := IO_FilteredFile([[compressor[1], compressor[3]]], filename, mode, bufsize);
   else
       file := IO_FilteredFile([[compressor[1], compressor[2]]], filename, mode, bufsize);
@@ -110,4 +111,82 @@ function(arg)
   #Nope, then just return fail
   return fail;
 
+end;
+
+MakeReadWriteGlobal("IO_FilteredFile");
+
+IO_FilteredFile :=
+function(arg)
+  # arguments: progs, filename [,mode][,bufsize]
+  # mode and bufsize as in IO_File, progs as for StartPipeline
+  local bufsize,f,fd,filename,mode,progs,r;
+  if Length(arg) = 2 then
+      progs := arg[1];
+      filename := arg[2];
+      mode := "r";
+      bufsize := IO.DefaultBufSize;
+  elif Length(arg) = 3 then
+      progs := arg[1];
+      filename := arg[2];
+      if IsString(arg[3]) then
+          mode := arg[3];
+          bufsize := IO.DefaultBufSize;
+      else
+          mode := "r";
+          bufsize := arg[3];
+      fi;
+  elif Length(arg) = 4 then
+      progs := arg[1];
+      filename := arg[2];
+      mode := arg[3];
+      bufsize := arg[4];
+  else
+      Error("IO: Usage: IO_FilteredFile( progs,filename [,mode][,bufsize] )\n",
+            "with IsString(filename)");
+  fi;
+  if not(IsString(filename)) and not(IsString(mode)) then
+      Error("IO: Usage: IO_FilteredFile( progs, filename [,mode][,bufsize] )\n",
+            "with IsString(filename)");
+  fi;
+  Print("x1:", filename, mode, progs, bufsize,"\n");
+  if Length(progs) = 0 then
+      return IO_File(filename,mode,bufsize);
+  fi;
+  if mode = "r" then
+    Print("x2:", filename, mode, progs, bufsize,"\n");
+
+      fd := IO_open(filename,IO.O_RDONLY,0);
+      Print("x3:", fd,"\n");
+      if fd = fail then return fail; fi;
+      r := IO_StartPipeline(progs,fd,"open",false);
+      Print("x4:", r,"\n");
+      if r = fail or fail in r.pids then
+          IO_close(fd);
+          return fail;
+      fi;
+      f := IO_WrapFD(r.stdout,bufsize,false);
+      SetProcessID(f,r.pids);
+      f!.dowaitpid := true;
+  else
+      if mode = "w" then
+          fd := IO_open(filename,IO.O_CREAT+IO.O_WRONLY+IO.O_TRUNC,
+                        IO.S_IRUSR+IO.S_IWUSR+IO.S_IRGRP+IO.S_IWGRP+
+                        IO.S_IROTH+IO.S_IWOTH);
+      else
+          fd := IO_open(filename,IO.O_WRONLY + IO.O_APPEND,
+                        IO.S_IRUSR+IO.S_IWUSR+IO.S_IRGRP+IO.S_IWGRP+
+                        IO.S_IROTH+IO.S_IWOTH);
+      fi;
+      if fd = fail then return fail; fi;
+      r := IO_StartPipeline(progs, "open", fd, false);
+      if r = fail or fail in r.pids then
+          IO_close(fd);
+          return fail;
+      fi;
+      f := IO_WrapFD(r.stdin,false,bufsize);
+      SetProcessID(f,r.pids);
+      f!.dowaitpid := true;
+  fi;
+  Print("x5:", f,"\n");
+  return f;
 end;
