@@ -49,6 +49,8 @@ Error, the 2nd argument <s> is not a valid graph6 string,
 gap> str := Concatenation(DIGRAPHS_Dir(), "/data/graph5.g6.gz");;
 gap> Print(DIGRAPHS_Dir());
 gap> Print(str);
+gap> StringFile(str);
+gap> StringFile("/home/travis/gap/pkg/digraphs/data/graph5.g6.gz");
 gap> list := ReadDigraphs(str);;
 gap> Size(list);
 34
