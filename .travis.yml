@@ -20,65 +20,25 @@ env:
 matrix:
   include:
     - env:
-      - SUITE=lint
-
-    - env:
       - SUITE=test
       - ABI=64
       - GAP=master
       - PACKAGES=latest
-
     - env:
       - SUITE=test
-      - ABI=32
-      - GAP=master
-      - PACKAGES=latest
-      addons:
-        apt_packages:
-          - g++-multilib
-
-    - env:
-      - SUITE=test
-      - ABI=32
+      - ABI=64
       - GAP=stable-4.10
       - PACKAGES=latest
-      addons:
-        apt_packages:
-          - g++-multilib
-
+    - env:
+      - SUITE=test
+      - ABI=64
+      - GAP=master
+      - PACKAGES=required
     - env:
       - SUITE=test
       - ABI=64
       - GAP=stable-4.10
       - PACKAGES=required
-
-    - env:
-      - SUITE=test
-      - ABI=64
-      - GAP=stable-4.9
-      - PACKAGES=required
-
-    - env:
-      - SUITE=test
-      - ABI=64
-      - GAP=required
-      - PACKAGES=required
-
-    - env:
-      - SUITE=test
-      - ABI=32
-      - GAP=required
-      - PACKAGES=required
-      addons:
-        apt_packages:
-          - g++-multilib
-
-    - env:
-      - SUITE=coverage
-      - ABI=64
-      - GAP=master
-      - PACKAGES=required
-      - THRESHOLD=98
 
 install:
   # GAP and some packages require special flags for compilation in 32-bit mode
